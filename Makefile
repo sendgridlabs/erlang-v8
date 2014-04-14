@@ -10,18 +10,19 @@ CT_SUITES = port
 
 ARCH := $(shell getconf LONG_BIT)
 OS := $(shell uname)
+CUR_DIR := $(shell pwd)
 
 BUILD_ARCH_32 := ia32
 BUILD_ARCH_64 := x64
 BUILD_ARCH := $(BUILD_ARCH_$(ARCH))
 
 V8_REF := 49744859536225e7ac3b726e5b019dd99e127e6f
-V8_DIR := lib/v8-$(V8_REF)
+V8_DIR := $(CUR_DIR)/lib/v8-$(V8_REF)
 V8_LIB := $(V8_DIR)/out/$(BUILD_ARCH).release
 V8_URL := https://github.com/v8/v8/archive/$(V8_REF).tar.gz
 
-TARGET_BIN := priv/erlang_v8
-TARGET_SRC := c_src/erlang_v8.cc
+TARGET_BIN := $(CUR_DIR)/priv/erlang_v8
+TARGET_SRC := $(CUR_DIR)/c_src/erlang_v8.cc
 
 include erlang.mk
 
@@ -54,10 +55,11 @@ $(V8_DIR)/build/gyp: $(V8_DIR)
 $(V8_LIB)/libv8_base.$(BUILD_ARCH).a: $(V8_DIR)/build/gyp
 	@cd $(V8_DIR) && make $(BUILD_ARCH).release werror=no
 	@touch $@
-	@cp $(V8_LIB)/obj.target/tools/gyp/libv8_{base.$(BUILD_ARCH),snapshot}.a \
-		$(V8_LIB) 2> /dev/null || :
-	@cp $(V8_LIB)/obj.target/third_party/icu/libicu{uc,i18n,data}.a \
-		$(V8_LIB) 2> /dev/null || :
+	@cp $(V8_LIB)/obj.target/tools/gyp/libv8_base.$(BUILD_ARCH).a $(V8_LIB)
+	@cp $(V8_LIB)/obj.target/tools/gyp/libv8_snapshot.a $(V8_LIB)
+	@cp $(V8_LIB)/obj.target/third_party/icu/libicuuc.a $(V8_LIB)
+	@cp $(V8_LIB)/obj.target/third_party/icu/libicui18n.a $(V8_LIB)
+	@cp $(V8_LIB)/obj.target/third_party/icu/libicudata.a $(V8_LIB)
 
 $(TARGET_SRC): $(V8_LIB)/libv8_base.$(BUILD_ARCH).a
 	@:
@@ -80,8 +82,11 @@ else
 	g++ -Iinclude $(TARGET_SRC) \
 		-o $(TARGET_BIN) \
 		-Wl,--start-group \
-		$(V8_LIB)/libv8_{base.$(BUILD_ARCH),snapshot}.a \
-		$(V8_LIB)/libicu{uc,i18n,data}.a \
+		$(V8_LIB)/libv8_base.$(BUILD_ARCH).a \
+		$(V8_LIB)/libv8_snapshot.a \
+		$(V8_LIB)/libicuuc.a \
+		$(V8_LIB)/libicui18n.a \
+		$(V8_LIB)/libicudata.a \
 		-Wl,--end-group \
 		-I $(V8_DIR)/include \
 		-lrt \
