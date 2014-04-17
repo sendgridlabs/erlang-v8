@@ -1,9 +1,11 @@
 -module(erlang_v8_vm).
 
 -behaviour(gen_server).
+-behaviour(poolboy_worker).
 
 -export([start/0]).
--export([start_link/0]).
+-export([start_link/1]).
+
 -export([stop/1]).
 -export([reset/1]).
 -export([restart/1]).
@@ -34,8 +36,8 @@
 
 %% External API
 
-start_link() ->
-    gen_server:start_link(?MODULE, [], []).
+start_link(Args) ->
+    gen_server:start_link(?MODULE, Args, []).
 
 start() ->
     gen_server:start(?MODULE, [], []).
@@ -63,7 +65,7 @@ stop(Pid) ->
 
 %% Callbacks
 
-init([]) ->
+init(_Args) ->
     State = start_port(#state{}),
     {ok, State}.
 
