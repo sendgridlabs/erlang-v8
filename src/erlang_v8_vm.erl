@@ -3,17 +3,11 @@
 -behaviour(gen_server).
 -behaviour(poolboy_worker).
 
--export([start/0]).
--export([start_link/1]).
+-export([start/0, start_link/1]).
 
--export([stop/1]).
--export([reset/1]).
--export([restart/1]).
+-export([stop/1, reset/1, restart/1]).
 
--export([eval/2]).
--export([eval/3]).
--export([call/3]).
--export([call/4]).
+-export([eval/2, eval/3, call/3, call/4]).
 
 -export([init/1]).
 -export([handle_call/3]).
