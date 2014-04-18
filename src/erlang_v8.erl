@@ -81,7 +81,6 @@ map_reduce(PoolName, Source, Args) ->
 
 map_reduce(PoolName, Source, Args, Timeout) ->
     poolboy:transaction(PoolName, fun(Pid) ->
-                                          erlang_v8_vm:reset(Pid),
                                           SerializedArgs = jiffy:encode(Args),
                                           SourceResult = <<"(function(){", Source/binary, "}).apply(null, ",
                                                      SerializedArgs/binary ,");">>,
