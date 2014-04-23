@@ -10,9 +10,6 @@
 -export([restart/1]).
 -export([set/1]).
 
-
--export([stop/1, reset/1, restart/1]).
-
 -export([eval/2, eval/3, call/3, call/4]).
 
 -export([init/1]).

@@ -18,19 +18,21 @@
 %%% API functions
 %%%===================================================================
 
-
-start() ->
-    application:start(?MODULE).
-
-stop() ->
-    application:stop(?MODULE).
-
 start_vm() ->
     start_vm([]).
 
 start_vm(Opts) ->
     erlang_v8_vm:start_link(Opts).
 
+stop_vm(Pid) ->
+    erlang_v8_vm:stop(Pid).
+
+
+start() ->
+    application:start(?MODULE).
+
+stop() ->
+    application:stop(?MODULE).
 
 %% ===================================================================
 %% @doc create new pool.
