@@ -1,3 +1,4 @@
+SHELL = /bin/bash
 PROJECT = erlang_v8
 
 DEPS = jiffy
@@ -55,11 +56,9 @@ $(V8_DIR)/build/gyp: $(V8_DIR)
 $(V8_LIB)/libv8_base.$(BUILD_ARCH).a: $(V8_DIR)/build/gyp
 	@cd $(V8_DIR) && make $(BUILD_ARCH).release werror=no
 	@touch $@
-	@cp $(V8_LIB)/obj.target/tools/gyp/libv8_base.$(BUILD_ARCH).a $(V8_LIB)
-	@cp $(V8_LIB)/obj.target/tools/gyp/libv8_snapshot.a $(V8_LIB)
-	@cp $(V8_LIB)/obj.target/third_party/icu/libicuuc.a $(V8_LIB)
-	@cp $(V8_LIB)/obj.target/third_party/icu/libicui18n.a $(V8_LIB)
-	@cp $(V8_LIB)/obj.target/third_party/icu/libicudata.a $(V8_LIB)
+	@cp $(V8_LIB)/obj.target/tools/gyp/*.a $(V8_LIB) 2> /dev/null || :
+	@cp $(V8_LIB)/obj.target/third_party/icu/*.a $(V8_LIB) 2> /dev/null || :
+
 
 $(TARGET_SRC): $(V8_LIB)/libv8_base.$(BUILD_ARCH).a
 	@:
@@ -82,11 +81,8 @@ else
 	g++ -Iinclude $(TARGET_SRC) \
 		-o $(TARGET_BIN) \
 		-Wl,--start-group \
-		$(V8_LIB)/libv8_base.$(BUILD_ARCH).a \
-		$(V8_LIB)/libv8_snapshot.a \
-		$(V8_LIB)/libicuuc.a \
-		$(V8_LIB)/libicui18n.a \
-		$(V8_LIB)/libicudata.a \
+		$(V8_LIB)/libv8_{base.$(BUILD_ARCH),snapshot}.a \
+		$(V8_LIB)/libicu{uc,i18n,data}.a \
 		-Wl,--end-group \
 		-I $(V8_DIR)/include \
 		-lrt \

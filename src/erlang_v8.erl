@@ -1,8 +1,13 @@
 -module(erlang_v8).
 
+
 %% Default timeout for calls to the client gen_server
 %% Specified in http://www.erlang.org/doc/man/gen_server.html#call-3
 -define(TIMEOUT, 5000).
+
+-export([start_vm/0]).
+-export([start_vm/1]).
+-export([stop_vm/1]).
 
 -export([start/0, stop/0]).
 -export([create_pool/2, delete_pool/1]).
@@ -13,11 +18,18 @@
 %%% API functions
 %%%===================================================================
 
+
 start() ->
     application:start(?MODULE).
 
 stop() ->
     application:stop(?MODULE).
+
+start_vm() ->
+    start_vm([]).
+
+start_vm(Opts) ->
+    erlang_v8_vm:start_link(Opts).
 
 
 %% ===================================================================

@@ -12,6 +12,7 @@ const uint8_t ERROR_WITH_LINENO_R = 1;
 
 const uint8_t EVAL_R = 0;
 const uint8_t RESET_VM_R = 2;
+const uint8_t SET_R = 3;
 
 struct Packet {
     uint8_t op;
@@ -41,6 +42,7 @@ void resp(Isolate* isolate, Handle<Value> response, int op) {
     cout << (char)((len >> 8) & 0xff) << (char)(len & 0xff);
     cout << (char)op;
     cout << *utf8;
+    cout.flush();
 }
 
 void ok(Isolate* isolate, Handle<Value> response) {
@@ -134,26 +136,22 @@ void eval(Isolate* isolate, string input) {
     }
 }
 
-Handle<ObjectTemplate> create_global(Isolate* isolate) {
-    Handle<ObjectTemplate> global =  ObjectTemplate::New(isolate);
-    global->Set(String::NewFromUtf8(isolate, "erlang_v8"),
-                String::NewFromUtf8(isolate, "yes"));
-    return global;
-}
-
-Handle<Context> create_context(Isolate* isolate, Handle<ObjectTemplate> global) {
-    return Context::New(isolate, NULL, create_global(isolate));
-}
-
-bool command_loop() {
+bool command_loop(int scriptc, char* scriptv[]) {
     Isolate* isolate = Isolate::GetCurrent();
 
     HandleScope handle_scope(isolate);
 
-    Handle<ObjectTemplate> global = create_global(isolate);
-    Handle<Context> context = create_context(isolate, global);
-
+    Handle<Context> context = Context::New(isolate, NULL);
     Context::Scope context_scope(context);
+    
+    // Initializing scripts for every new (reset) request. This is a temporary
+    // solution.
+    for (int i = 1; i < scriptc; i++) {
+        // we need to catch errors here and inform the user.
+        Handle<String> source = String::NewFromUtf8(isolate, scriptv[i]);
+        Handle<Script> script = Script::Compile(source);
+        Handle<Value> result = script->Run();
+    }
 
     bool reset = false;
     Packet packet;
@@ -175,7 +173,7 @@ bool command_loop() {
 int main(int argc, char* argv[]) {
     ios_base::sync_with_stdio(false);
 
-    while (command_loop());
+    while (command_loop(argc, argv));
 
     return 0;
 }
