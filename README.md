@@ -6,7 +6,7 @@ This is just an experiment to see if embedding v8 in an actual OS process is
 more predictable than using a port driver or NIF. I will give the project
 proper attention if the experiment works out.
 
-The most notable features: 
+The most notable features:
 
 - You can `eval/3` things like "while (true) {}" with a timeout and have the
   v8 VM actually terminate when it times out (the OS process is killed and
@@ -33,6 +33,23 @@ Or with rebar:
     rebar get-deps
     rebar compile
 
+## Run
+
+To run lib use:
+
+    make run
+
+And test it:
+
+    application:start(jsx).
+    erlang_v8:start().
+    erlang_v8:create_pool(v8_pool, 30).
+    erlang_v8:map_reduce({global,v8_pool}, <<"return Object.keys(JSON.parse(arguments[0]))">>, [<<"{\"a\": 1, \"b\": 2}">>]).
+
+Result:
+
+    {ok,[<<"a">>,<<"b">>]}
+
 ## Tests
 
 You can run a few tests to verify basic functionality:
@@ -50,7 +67,7 @@ Define a function:
     {ok, undefined} =
         erlang_v8:eval(VM, <<"function sum(a, b) { return a + b }">>).
 
-Call the function: 
+Call the function:
 
     {ok, 2} = erlang_v8:call(VM, <<"sum">>, [1, 1]).
 

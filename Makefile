@@ -32,6 +32,9 @@ include erlang.mk
 
 app: v8
 
+run:
+	erl -pa deps/*/ebin -pa ./ebin
+
 clean: local-clean
 
 clean-all: local-clean-all
