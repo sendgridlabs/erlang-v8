@@ -9,9 +9,13 @@
 -export([start_vm/1]).
 -export([stop_vm/1]).
 
+-export([reset_vm/1, restart_vm/1]).
+
 -export([start/0, stop/0]).
 -export([create_pool/2, delete_pool/1]).
 -export([eval/2, eval/3]).
+-export([call/3, call/4]).
+-export([eval_js/2, eval_js/3]).
 -export([map_reduce/3, map_reduce/4]).
 
 %%%===================================================================
@@ -53,6 +57,7 @@ create_pool(PoolName, Size) ->
 delete_pool(PoolName) ->
     erlang_v8_sup:delete_pool(PoolName).
 
+
 %%--------------------------------------------------------------------
 %% @doc
 %% Executes the given command in the specified connection. The
@@ -61,16 +66,42 @@ delete_pool(PoolName) ->
 %% always be binaries.
 %% @end
 %%--------------------------------------------------------------------
--spec eval(PoolName::atom(), Source::binary()) ->
+reset_vm(Pid) ->
+    erlang_v8_vm:reset(Pid).
+
+restart_vm(Pid) ->
+    erlang_v8_vm:restart(Pid).
+
+eval(Pid, Source) ->
+    erlang_v8_vm:eval(Pid, Source).
+
+eval(Pid, Source, Timeout) ->
+    erlang_v8_vm:eval(Pid, Source, Timeout).
+
+call(Pid, FunctionName, Args) ->
+    erlang_v8_vm:call(Pid, FunctionName, Args).
+
+call(Pid, FunctionName, Args, Timeout) ->
+    erlang_v8_vm:call(Pid, FunctionName, Args, Timeout).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Executes the given command in the specified connection. The
+%% command must be a valid Redis command and may contain arbitrary
+%% data which will be converted to binaries. The returned values will
+%% always be binaries.
+%% @end
+%%--------------------------------------------------------------------
+-spec eval_js(PoolName::atom(), Source::binary()) ->
                {ok, binary() | [binary()]} | {error, Reason::binary()}.
 
-eval(PoolName, Source) ->
-    eval(PoolName, Source, ?TIMEOUT).
+eval_js(PoolName, Source) ->
+    eval_js(PoolName, Source, ?TIMEOUT).
 
--spec eval(PoolName::atom(), Source::binary(), Timeout::integer()) ->
+-spec eval_js(PoolName::atom(), Source::binary(), Timeout::integer()) ->
                {ok, binary() | [binary()]} | {error, Reason::binary()}.
 
-eval(PoolName, Source, Timeout) ->
+eval_js(PoolName, Source, Timeout) ->
     poolboy:transaction(PoolName, fun(Pid) ->
                                           erlang_v8_vm:reset(Pid),
                                           erlang_v8_vm:eval(Pid, Source, Timeout)
