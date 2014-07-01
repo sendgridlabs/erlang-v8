@@ -1,8 +1,9 @@
 SHELL = /bin/bash
 PROJECT = erlang_v8
 
-DEPS = jsx
+DEPS = jsx poolboy
 dep_jsx = pkg://jsx master
+dep_poolboy = https://github.com/devinus/poolboy.git master
 
 TEST_DEPS = ct_helper
 dep_ct_helper = https://github.com/extend/ct_helper.git master
@@ -38,7 +39,7 @@ clean-all: local-clean-all
 local-clean:
 	rm -rf $(TARGET_BIN)
 
-local-clean-all:: 
+local-clean-all::
 	rm -rf $(V8_DIR)
 
 v8: $(TARGET_BIN)

@@ -38,7 +38,7 @@ stop() ->
 %% @doc create new pool.
 %% @end
 %% ===================================================================
--spec(create_pool(PoolName::atom(), Size::integer()) -> 
+-spec(create_pool(PoolName::atom(), Size::integer()) ->
              {ok, pid()} | {error,{already_started, pid()}}).
 
 create_pool(PoolName, Size) ->
@@ -95,7 +95,7 @@ map_reduce(PoolName, Source, Args) ->
 
 map_reduce(PoolName, Source, Args, Timeout) ->
     poolboy:transaction(PoolName, fun(Pid) ->
-                                          SerializedArgs = jiffy:encode(Args),
+                                          SerializedArgs = jsx:encode(Args),
                                           SourceResult = <<"(function(){", Source/binary, "}).apply(null, ",
                                                      SerializedArgs/binary ,");">>,
                                           erlang_v8_vm:eval(Pid, SourceResult, Timeout)
