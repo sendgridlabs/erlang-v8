@@ -75,7 +75,8 @@ init([Opts]) ->
 handle_call({call, FunctionName, Args, Timeout}, From, State) ->
     %% TODO: call should be a special op and decoding should be done in 
     %% the cc wrapper.
-    SerializedArgs = jiffy:encode(Args),
+    io:format("************************************* ARGS: ~p", [Args]),
+    SerializedArgs = jsx:encode(Args),
     Source = <<FunctionName/binary, ".apply(null, JSON.parse('",
                SerializedArgs/binary ,"'));">>,
     handle_call({eval, Source, Timeout}, From, State);
@@ -175,9 +176,9 @@ eval_js(Port, Source, Timeout) ->
         {Port, {data, <<_:8, "undefined">>}} ->
             {ok, undefined};
         {Port, {data, <<0:8, Response/binary>>}} ->
-            {ok, jiffy:decode(Response)};
+            {ok, jsx:decode(Response)};
         {Port, {data, <<1:8, Response/binary>>}} ->
-            {[{<<"error">>, Reason}]} = jiffy:decode(Response),
+            [{<<"error">>, Reason}] = jsx:decode(Response),
             {error, Reason};
         {Port, Error} ->
             %% TODO: we should probably special case here.
@@ -194,19 +195,18 @@ priv_dir() ->
 
 %% @doc Parse proplists/opts and populate a state record.
 parse_opts(Opts) ->
-    parse_opts(Opts, #state{initial_source = []}).
+    lists:foldl(fun parse_opt/2, #state{initial_source = []}, Opts).
 
-parse_opts([], State) ->
-    State;
+%% @doc Append source specified in source option.
+parse_opt({source, S}, #state{initial_source = InitialSource} = State) ->
+    State#state{initial_source = [S|InitialSource]};
 
-parse_opts([{source, S}|T], #state{initial_source = InitialSource} = State) ->
-    parse_opts(T, State#state{initial_source = [S|InitialSource]});
-
-parse_opts([{file, F}|T], #state{initial_source = InitialSource} = State) ->
+%% @doc Read contents of file option and append to state.
+parse_opt({file, F}, #state{initial_source = InitialSource} = State) ->
     %% Files should probably be read in the OS process instead to prevent
     %% keeping multiple copies of the JS source code in memory.
     {ok, S} = file:read_file(F),
-    parse_opts(T, State#state{initial_source = [S|InitialSource]});
+    State#state{initial_source = [S|InitialSource]};
 
-parse_opts([_|T], State) ->
-    parse_opts(T, State).
+%% @doc Ignore unknown options.
+parse_opt(_, State) -> State.
