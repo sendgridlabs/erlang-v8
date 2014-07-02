@@ -127,7 +127,7 @@ map_reduce(PoolName, Source, Args) ->
 map_reduce(PoolName, Source, Args, Timeout) ->
     poolboy:transaction(PoolName, fun(Pid) ->
                                           SerializedArgs = jsx:encode(Args),
-                                          SourceResult = <<"(function(){", Source/binary, "}).apply(null, ",
+                                          SourceResult = <<"(function(){ var data = arguments[0]; ", Source/binary, "}).apply(null, ",
                                                      SerializedArgs/binary ,");">>,
                                           erlang_v8_vm:eval(Pid, SourceResult, Timeout)
                                   end).
