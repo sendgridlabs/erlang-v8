@@ -12,7 +12,7 @@
 -export([reset_vm/1, restart_vm/1]).
 
 -export([start/0, stop/0]).
--export([create_pool/2, delete_pool/1]).
+-export([create_pool/2, create_pool/3, delete_pool/1]).
 -export([eval/2, eval/3]).
 -export([call/3, call/4]).
 -export([eval_js/2, eval_js/3]).
@@ -47,6 +47,12 @@ stop() ->
 
 create_pool(PoolName, Size) ->
     erlang_v8_sup:create_pool(PoolName, Size).
+
+-spec(create_pool(PoolName::atom(), Size::integer(), Args::[tuple()]) ->
+             {ok, pid()} | {error,{already_started, pid()}}).
+
+create_pool(PoolName, Size, Args) ->
+    erlang_v8_sup:create_pool(PoolName, Size, Args).
 
 %% ===================================================================
 %% @doc delet pool.

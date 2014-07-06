@@ -4,7 +4,7 @@
 
 %% API
 -export([start_link/0]).
--export([create_pool/2, delete_pool/1]).
+-export([create_pool/2, create_pool/3, delete_pool/1]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -25,10 +25,16 @@ start_link() ->
              {ok, pid()} | {error,{already_started, pid()}}).
 
 create_pool(PoolName, Size) ->
+    create_pool(PoolName, Size, []).
+
+-spec(create_pool(PoolName::atom(), Size::integer(), Args::[tuple()]) ->
+             {ok, pid()} | {error,{already_started, pid()}}).
+
+create_pool(PoolName, Size, Args) ->
     PoolSpec = {PoolName, {poolboy, start_link, [[{name,{global, PoolName}},
                                                   {worker_module, erlang_v8_vm},
                                                   {size, Size},
-                                                  {max_overflow, 10}]
+                                                  {max_overflow, 10}], Args
                                                 ]},
                 permanent, 5000, worker,
                 [poolboy, erlang_v8_vm]},

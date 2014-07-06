@@ -43,12 +43,17 @@ And test it:
 
     application:start(jsx).
     erlang_v8:start().
-    erlang_v8:create_pool(v8_pool, 30).
-    erlang_v8:map_reduce({global,v8_pool}, <<"return Object.keys(JSON.parse(arguments[0]))">>, [<<"{\"a\": 1, \"b\": 2}">>]).
+    erlang_v8:create_pool(v8_pool, 10).
+    erlang_v8:map_reduce({global,v8_pool}, <<"return Object.keys(JSON.parse(data))">>, [<<"{\"a\": 1, \"b\": 2}">>]).
+    erlang_v8:create_pool(v8_underscore_pool, 10, [{file, "underscore-min.js"}]).
+    erlang_v8:map_reduce({global,v8_underscore_pool}, <<"return _.filter(data, function(num){ return num % 2 == 0; })">>, [[1, 2, 3, 4, 5, 6]]).
+    erlang_v8:map_reduce({global,v8_underscore_pool}, <<"return _.reduce(data, function(memo, num){ return memo + num; }, 0)">>, [[1, 2, 3, 4, 5, 6]]).
 
 Result:
 
     {ok,[<<"a">>,<<"b">>]}
+    {ok,[2,4,6]}
+    {ok,21}
 
 ## Tests
 
